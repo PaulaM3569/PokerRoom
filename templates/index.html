@@ -45,6 +45,9 @@
             padding: 10px;
             border-radius: 5px;
         }
+        #game-section {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -53,21 +56,26 @@
     <input type="text" id="name">
     <button onclick="addPlayer()">Agregar Jugador</button>
     
-    <h2>Jugadores</h2>
-    <ul id="playerList"></ul>
-    
-    <h2>Selecciona una carta</h2>
-    <button onclick="setCard('S')">S</button>
-    <button onclick="setCard('M')">M</button>
-    <button onclick="setCard('L')">L</button>
-    <button onclick="setCard('XL')">XL</button>
-    
-    <h2>Cartas</h2>
-    <ul id="cardList"></ul>
-    
-    <label>Clasificación:</label>
-    <input type="text" id="classification">
-    <button onclick="revealCards()">Revelar Cartas</button>
+    <div id="game-section">
+        <h2>Jugadores</h2>
+        <ul id="playerList"></ul>
+        
+        <h2>Selecciona una carta</h2>
+        <button onclick="setCard('S')">S</button>
+        <button onclick="setCard('M')">M</button>
+        <button onclick="setCard('L')">L</button>
+        <button onclick="setCard('XL')">XL</button>
+        
+        <h2>Cartas</h2>
+        <ul id="cardList"></ul>
+        
+        <label>Clasificación:</label>
+        <input type="text" id="classification">
+        <button onclick="revealCards()">Revelar Cartas</button>
+        
+        <h2>Controles</h2>
+        <button onclick="resetGame()">Reiniciar Juego</button>
+    </div>
     
     <script>
         const socket = io();
@@ -78,7 +86,11 @@
             fetch("/add_player", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: playerName })
+                body: JSON.stringify({ name: playerName, user_id: playerName })
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    document.getElementById("game-section").style.display = "block";
+                }
             });
         }
         
@@ -101,6 +113,19 @@
             });
         }
         
+        function resetGame() {
+            fetch("/reset_game", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            }).then(() => {
+                document.getElementById("game-section").style.display = "none";
+                document.getElementById("playerList").innerHTML = "";
+                document.getElementById("cardList").innerHTML = "";
+                document.getElementById("name").value = "";
+                document.getElementById("classification").value = "";
+            });
+        }
+        
         socket.on("update_players", data => {
             document.getElementById("playerList").innerHTML =
                 Object.keys(data.players).map(name => `<li>${name}</li>`).join("");
@@ -115,6 +140,14 @@
             document.getElementById("cardList").innerHTML =
                 Object.keys(data.cards).map(name => `<li>${name}: ${data.cards[name]}</li>`).join("");
             alert(`Clasificación: ${data.classification}`);
+        });
+        
+        socket.on("reset_game", () => {
+            document.getElementById("game-section").style.display = "none";
+            document.getElementById("playerList").innerHTML = "";
+            document.getElementById("cardList").innerHTML = "";
+            document.getElementById("name").value = "";
+            document.getElementById("classification").value = "";
         });
     </script>
 </body>
