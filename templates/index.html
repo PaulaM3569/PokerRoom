@@ -70,11 +70,15 @@
         
         <h2>Controles</h2>
         <label>Historia:</label>
-        <input type="text" id="classification">
+        <input type="text" id="story">
+        <button onclick="addStory()">Agregar Historia</button>
         <div>
             <button onclick="revealCards()">Revelar Cartas</button>
-            <button onclick="resetGame()">Reiniciar Juego</button>
+            <button onclick="resetRound()">Nueva Ronda</button>
         </div>
+        
+        <h2>Historias Anteriores</h2>
+        <ul id="historyList"></ul>
     </div>
     
     <script>
@@ -83,7 +87,7 @@
         let playerAdded = false;
         let selectedCard = "?";
         let players = {};
-        
+
         function addPlayer() {
             if (playerAdded) {
                 alert("Solo puedes agregar un jugador");
@@ -102,7 +106,16 @@
                 }
             });
         }
-        
+
+        function addStory() {
+            let story = document.getElementById("story").value;
+            fetch("/add_story", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ story: story })
+            });
+        }
+
         function setCard(card) {
             if (playerName) {
                 selectedCard = card;
@@ -115,57 +128,42 @@
                 });
             }
         }
-        
+
         function revealCards() {
-            const classification = document.getElementById("classification").value;
+            let story = document.getElementById("story").value;
             fetch("/reveal_cards", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ classification: classification })
+                body: JSON.stringify({ classification: story })
             });
         }
-        
-        function resetGame() {
-            fetch("/reset_game", {
+
+        function resetRound() {
+            fetch("/reset_round", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" }
-            }).then(() => {
-                document.getElementById("game-section").style.display = "none";
-                document.getElementById("playerList").innerHTML = "";
-                document.getElementById("name").value = "";
-                document.getElementById("classification").value = "";
-                document.getElementById("addPlayerButton").disabled = false;
-                playerAdded = false;
-                selectedCard = "?";
-                players = {};
             });
         }
-        
+
         function updatePlayerList() {
             document.getElementById("playerList").innerHTML =
                 Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         }
-        
+
         socket.on("update_players", data => {
             players = data.players;
             updatePlayerList();
         });
-        
+
         socket.on("reveal_cards", data => {
             document.getElementById("playerList").innerHTML =
                 Object.keys(data.cards).map(name => `<li>${name}: ${data.cards[name]}</li>`).join("");
-            alert(`Historia: ${data.classification}`);
         });
-        
-        socket.on("reset_game", () => {
-            document.getElementById("game-section").style.display = "none";
+
+        socket.on("reset_round", data => {
             document.getElementById("playerList").innerHTML = "";
-            document.getElementById("name").value = "";
-            document.getElementById("classification").value = "";
-            document.getElementById("addPlayerButton").disabled = false;
-            playerAdded = false;
-            selectedCard = "?";
-            players = {};
+            players = data.players;
+            updatePlayerList();
         });
     </script>
 </body>
