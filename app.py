@@ -11,6 +11,15 @@ revealed = False
 classification = ""
 registered_users = set()  # Para rastrear quién ya ha agregado un jugador
 
+def reset_game():
+    global players, cards, revealed, classification, registered_users
+    players.clear()
+    cards.clear()
+    revealed = False
+    classification = ""
+    registered_users.clear()
+    socketio.emit('reset_game')
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -31,6 +40,7 @@ def add_player():
     cards[name] = "🂠"
     registered_users.add(user_id)
     socketio.emit('update_players', {'players': players, 'cards': cards})
+    socketio.emit('show_game')  # Emitir evento para mostrar el resto del juego
     return jsonify(success=True)
 
 @app.route('/set_card', methods=['POST'])
@@ -52,6 +62,11 @@ def reveal_cards():
     revealed = True
     classification = request.json.get('classification', '')
     socketio.emit('reveal_cards', {'classification': classification, 'cards': players})
+    return jsonify(success=True)
+
+@app.route('/reset_game', methods=['POST'])
+def reset():
+    reset_game()
     return jsonify(success=True)
 
 if __name__ == '__main__':
