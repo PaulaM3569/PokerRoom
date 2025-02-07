@@ -120,29 +120,33 @@
         function addStory() {
             const story = document.getElementById("newStory").value;
             if (story.trim() !== "") {
-                stories.push(story);
-                socket.emit("update_stories", { stories });
+                fetch("/add_story", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ story })
+                }).then(() => {
+                    socket.emit("update_stories_request");
+                });
                 document.getElementById("newStory").value = "";
             }
         }
         
         function updateStoryList(data) {
             stories = data.stories;
-            const storyList = document.getElementById("storyList");
-            const classificationSelect = document.getElementById("classification");
-            storyList.innerHTML = stories.map(story => `<li>${story}</li>`).join(" ");
-            classificationSelect.innerHTML = stories.map(story => `<option value="${story}">${story}</option>`).join(" ");
+            document.getElementById("storyList").innerHTML = stories.map(story => `<li>${story}</li>`).join("");
+            document.getElementById("classification").innerHTML = stories.map(story => `<option value="${story}">${story}</option>`).join("");
         }
         
         function setCard(card) {
             if (playerName) {
                 selectedCard = card;
                 players[playerName] = selectedCard;
-                updatePlayerList({ players });
                 fetch("/set_card", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ name: playerName, card: card })
+                }).then(() => {
+                    socket.emit("update_players_request");
                 });
             }
         }
@@ -153,6 +157,8 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ classification: classification })
+            }).then(() => {
+                socket.emit("update_players_request");
             });
         }
         
