@@ -57,7 +57,7 @@
     <button onclick="addPlayer()">Agregar Jugador</button>
     
     <div id="game-section">
-        <h2>Jugadores</h2>
+        <h2>Jugadores y Cartas</h2>
         <ul id="playerList"></ul>
         
         <h2>Selecciona una carta</h2>
@@ -65,9 +65,6 @@
         <button onclick="setCard('M')">M</button>
         <button onclick="setCard('L')">L</button>
         <button onclick="setCard('XL')">XL</button>
-        
-        <h2>Cartas</h2>
-        <ul id="cardList"></ul>
         
         <label>Clasificación:</label>
         <input type="text" id="classification">
@@ -120,7 +117,6 @@
             }).then(() => {
                 document.getElementById("game-section").style.display = "none";
                 document.getElementById("playerList").innerHTML = "";
-                document.getElementById("cardList").innerHTML = "";
                 document.getElementById("name").value = "";
                 document.getElementById("classification").value = "";
             });
@@ -128,16 +124,11 @@
         
         socket.on("update_players", data => {
             document.getElementById("playerList").innerHTML =
-                Object.keys(data.players).map(name => `<li>${name}</li>`).join("");
-        });
-        
-        socket.on("update_cards", data => {
-            document.getElementById("cardList").innerHTML =
-                Object.keys(data.cards).map(name => `<li>${name}: ${data.cards[name]}</li>`).join("");
+                Object.keys(data.players).map(name => `<li>${name}: ${data.players[name]}</li>`).join("");
         });
         
         socket.on("reveal_cards", data => {
-            document.getElementById("cardList").innerHTML =
+            document.getElementById("playerList").innerHTML =
                 Object.keys(data.cards).map(name => `<li>${name}: ${data.cards[name]}</li>`).join("");
             alert(`Clasificación: ${data.classification}`);
         });
@@ -145,7 +136,6 @@
         socket.on("reset_game", () => {
             document.getElementById("game-section").style.display = "none";
             document.getElementById("playerList").innerHTML = "";
-            document.getElementById("cardList").innerHTML = "";
             document.getElementById("name").value = "";
             document.getElementById("classification").value = "";
         });
