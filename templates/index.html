@@ -54,7 +54,7 @@
     <h1>Poker Room</h1>
     <label>Nombre:</label>
     <input type="text" id="name">
-    <button onclick="addPlayer()">Agregar Jugador</button>
+    <button onclick="addPlayer()" id="addPlayerButton">Agregar Jugador</button>
     
     <div id="game-section">
         <h2>Jugadores y Cartas</h2>
@@ -77,8 +77,13 @@
     <script>
         const socket = io();
         let playerName = "";
+        let playerAdded = false;
         
         function addPlayer() {
+            if (playerAdded) {
+                alert("Solo puedes agregar un jugador");
+                return;
+            }
             playerName = document.getElementById("name").value;
             fetch("/add_player", {
                 method: "POST",
@@ -87,6 +92,8 @@
             }).then(response => response.json()).then(data => {
                 if (data.success) {
                     document.getElementById("game-section").style.display = "block";
+                    playerAdded = true;
+                    document.getElementById("addPlayerButton").disabled = true;
                 }
             });
         }
@@ -119,6 +126,8 @@
                 document.getElementById("playerList").innerHTML = "";
                 document.getElementById("name").value = "";
                 document.getElementById("classification").value = "";
+                document.getElementById("addPlayerButton").disabled = false;
+                playerAdded = false;
             });
         }
         
@@ -138,6 +147,8 @@
             document.getElementById("playerList").innerHTML = "";
             document.getElementById("name").value = "";
             document.getElementById("classification").value = "";
+            document.getElementById("addPlayerButton").disabled = false;
+            playerAdded = false;
         });
     </script>
 </body>
