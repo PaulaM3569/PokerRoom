@@ -80,6 +80,7 @@
         let playerName = "";
         let playerAdded = false;
         let selectedCard = "?";
+        let players = {};
         
         function addPlayer() {
             if (playerAdded) {
@@ -103,6 +104,7 @@
         function setCard(card) {
             if (playerName) {
                 selectedCard = card;
+                players[playerName] = selectedCard;
                 updatePlayerList();
                 fetch("/set_card", {
                     method: "POST",
@@ -133,17 +135,18 @@
                 document.getElementById("addPlayerButton").disabled = false;
                 playerAdded = false;
                 selectedCard = "?";
+                players = {};
             });
         }
         
         function updatePlayerList() {
             document.getElementById("playerList").innerHTML =
-                `<li>${playerName}: ${selectedCard}</li>`;
+                Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         }
         
         socket.on("update_players", data => {
-            document.getElementById("playerList").innerHTML =
-                Object.keys(data.players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
+            players = data.players;
+            updatePlayerList();
         });
         
         socket.on("reveal_cards", data => {
@@ -160,6 +163,7 @@
             document.getElementById("addPlayerButton").disabled = false;
             playerAdded = false;
             selectedCard = "?";
+            players = {};
         });
     </script>
 </body>
