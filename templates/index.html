@@ -106,8 +106,14 @@
                     document.getElementById("game-section").style.display = "block";
                     playerAdded = true;
                     document.getElementById("addPlayerButton").disabled = true;
+                    updatePlayerList();
                 }
             });
+        }
+        
+        function updatePlayerList() {
+            document.getElementById("playerList").innerHTML =
+                Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         }
         
         function addStory() {
@@ -122,7 +128,7 @@
         function updateStoryList() {
             const storyList = document.getElementById("storyList");
             const classificationSelect = document.getElementById("classification");
-            storyList.innerHTML = stories.map((story, index) => `<li>${story}</li>`).join(" ");
+            storyList.innerHTML = stories.map(story => `<li>${story}</li>`).join(" ");
             classificationSelect.innerHTML = stories.map(story => `<option value="${story}">${story}</option>`).join(" ");
         }
         
@@ -163,6 +169,7 @@
                 players = {};
                 stories = [];
                 updateStoryList();
+                updatePlayerList();
             });
         }
     </script>
