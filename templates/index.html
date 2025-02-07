@@ -19,7 +19,7 @@
         label {
             font-size: 18px;
         }
-        input, button, select {
+        input, button {
             margin: 10px;
             padding: 10px;
             font-size: 16px;
@@ -71,10 +71,6 @@
         <h2>Controles</h2>
         <label>Historia:</label>
         <input type="text" id="classification">
-        <button onclick="addHistory()">Agregar Historia</button>
-        <select id="historyDropdown">
-            <option value="">Seleccionar historia</option>
-        </select>
         <div>
             <button onclick="revealCards()">Revelar Cartas</button>
             <button onclick="resetGame()">Reiniciar Juego</button>
@@ -142,23 +138,13 @@
                 playerAdded = false;
                 selectedCard = "?";
                 players = {};
-                document.getElementById("historyDropdown").innerHTML = '<option value="">Seleccionar historia</option>';
             });
         }
         
-        function addHistory() {
-            const classification = document.getElementById("classification").value;
-            if (classification.trim() !== "") {
-                socket.emit("add_history", classification);
-                document.getElementById("classification").value = "";
-            }
+        function updatePlayerList() {
+            document.getElementById("playerList").innerHTML =
+                Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         }
-        
-        socket.on("update_history", data => {
-            const dropdown = document.getElementById("historyDropdown");
-            dropdown.innerHTML = '<option value="">Seleccionar historia</option>' +
-                data.histories.map(hist => `<option value="${hist}">${hist}</option>`).join("");
-        });
         
         socket.on("update_players", data => {
             players = data.players;
@@ -180,7 +166,6 @@
             playerAdded = false;
             selectedCard = "?";
             players = {};
-            document.getElementById("historyDropdown").innerHTML = '<option value="">Seleccionar historia</option>';
         });
     </script>
 </body>
