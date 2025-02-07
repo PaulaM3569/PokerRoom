@@ -8,17 +8,15 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 players = {}
 cards = {}
 revealed = False
-classification = ""
-registered_users = set()  # Para rastrear quién ya ha agregado un jugador
+histories = []
+current_story = ""
+registered_users = set()
 
-def reset_game():
-    global players, cards, revealed, classification, registered_users
-    players.clear()
-    cards.clear()
+def reset_round():
+    global cards, revealed
+    cards = {player: "🂠" for player in players}
     revealed = False
-    classification = ""
-    registered_users.clear()
-    socketio.emit('reset_game')
+    socketio.emit('reset_round', {'players': players, 'cards': cards})
 
 @app.route('/')
 def index():
@@ -28,7 +26,7 @@ def index():
 def add_player():
     global players, registered_users
     name = request.json.get('name', '').strip()
-    user_id = request.json.get('user_id', '').strip()  # Se espera un identificador único del usuario
+    user_id = request.json.get('user_id', '').strip()
     
     if not name or name in players:
         return jsonify(success=False, error="Nombre inválido o duplicado")
@@ -40,7 +38,7 @@ def add_player():
     cards[name] = "🂠"
     registered_users.add(user_id)
     socketio.emit('update_players', {'players': players, 'cards': cards})
-    socketio.emit('show_game')  # Emitir evento para mostrar el resto del juego
+    socketio.emit('show_game')
     return jsonify(success=True)
 
 @app.route('/set_card', methods=['POST'])
@@ -58,15 +56,26 @@ def set_card():
 
 @app.route('/reveal_cards', methods=['POST'])
 def reveal_cards():
-    global revealed, classification
+    global revealed, current_story, histories
     revealed = True
-    classification = request.json.get('classification', '')
-    socketio.emit('reveal_cards', {'classification': classification, 'cards': players})
+    story = request.json.get('classification', '')
+    histories.append({"story": story, "cards": players.copy()})
+    current_story = story
+    socketio.emit('reveal_cards', {'classification': story, 'cards': players})
     return jsonify(success=True)
 
-@app.route('/reset_game', methods=['POST'])
+@app.route('/add_story', methods=['POST'])
+def add_story():
+    global current_story
+    story = request.json.get('story', '').strip()
+    if story:
+        current_story = story
+        return jsonify(success=True)
+    return jsonify(success=False)
+
+@app.route('/reset_round', methods=['POST'])
 def reset():
-    reset_game()
+    reset_round()
     return jsonify(success=True)
 
 if __name__ == '__main__':
