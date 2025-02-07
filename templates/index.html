@@ -120,8 +120,13 @@
         function addStory() {
             const story = document.getElementById("newStory").value;
             if (story.trim() !== "") {
-                stories.push(story);
-                socket.emit("update_stories", { stories });
+                fetch("/add_story", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ story })
+                }).then(response => response.json()).then(() => {
+                    socket.emit("update_stories_request");
+                });
                 document.getElementById("newStory").value = "";
             }
         }
@@ -132,19 +137,6 @@
             const classificationSelect = document.getElementById("classification");
             storyList.innerHTML = stories.map(story => `<li>${story}</li>`).join(" ");
             classificationSelect.innerHTML = stories.map(story => `<option value="${story}">${story}</option>`).join(" ");
-        }
-        
-        function setCard(card) {
-            if (playerName) {
-                selectedCard = card;
-                players[playerName] = selectedCard;
-                updatePlayerList({ players });
-                fetch("/set_card", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: playerName, card: card })
-                });
-            }
         }
         
         function revealCards() {
@@ -168,8 +160,6 @@
                 document.getElementById("addPlayerButton").disabled = false;
                 playerAdded = false;
                 selectedCard = "?";
-                players = {};
-                stories = [];
                 socket.emit("update_players_request");
                 socket.emit("update_stories_request");
             });
