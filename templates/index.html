@@ -149,19 +149,16 @@
         function addHistory() {
             const classification = document.getElementById("classification").value;
             if (classification.trim() !== "") {
-                const dropdown = document.getElementById("historyDropdown");
-                const option = document.createElement("option");
-                option.text = classification;
-                option.value = classification;
-                dropdown.add(option);
+                socket.emit("add_history", classification);
                 document.getElementById("classification").value = "";
             }
         }
         
-        function updatePlayerList() {
-            document.getElementById("playerList").innerHTML =
-                Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
-        }
+        socket.on("update_history", data => {
+            const dropdown = document.getElementById("historyDropdown");
+            dropdown.innerHTML = '<option value="">Seleccionar historia</option>' +
+                data.histories.map(hist => `<option value="${hist}">${hist}</option>`).join("");
+        });
         
         socket.on("update_players", data => {
             players = data.players;
