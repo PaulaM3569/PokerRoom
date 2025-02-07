@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 from flask_socketio import SocketIO, emit
+import eventlet
 
 app = Flask(__name__)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 players = {}
 cards = {}
@@ -19,7 +20,7 @@ def add_player():
     name = request.json.get('name', '').strip()
     if name and name not in players:
         players[name] = "?"
-        cards[name] = "🂠"  # Carta boca abajo
+        cards[name] = "🂠"
         socketio.emit('update_players', {'players': players, 'cards': cards})
         return jsonify(success=True)
     return jsonify(success=False, error="Nombre inválido o duplicado")
@@ -32,7 +33,7 @@ def set_card():
         card = request.json.get('card')
         if name in players:
             players[name] = card
-            cards[name] = "🂠"  # Mantener la carta oculta
+            cards[name] = "🂠"
             socketio.emit('update_cards', {'cards': cards})
             return jsonify(success=True)
     return jsonify(success=False)
@@ -46,4 +47,4 @@ def reveal_cards():
     return jsonify(success=True)
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000)
