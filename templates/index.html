@@ -106,12 +106,13 @@
                     document.getElementById("game-section").style.display = "block";
                     playerAdded = true;
                     document.getElementById("addPlayerButton").disabled = true;
-                    updatePlayerList();
+                    socket.emit("update_players_request");
                 }
             });
         }
         
-        function updatePlayerList() {
+        function updatePlayerList(data) {
+            players = data.players;
             document.getElementById("playerList").innerHTML =
                 Object.keys(players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         }
@@ -120,12 +121,13 @@
             const story = document.getElementById("newStory").value;
             if (story.trim() !== "") {
                 stories.push(story);
-                updateStoryList();
+                socket.emit("update_stories", { stories });
                 document.getElementById("newStory").value = "";
             }
         }
         
-        function updateStoryList() {
+        function updateStoryList(data) {
+            stories = data.stories;
             const storyList = document.getElementById("storyList");
             const classificationSelect = document.getElementById("classification");
             storyList.innerHTML = stories.map(story => `<li>${story}</li>`).join(" ");
@@ -136,7 +138,7 @@
             if (playerName) {
                 selectedCard = card;
                 players[playerName] = selectedCard;
-                updatePlayerList();
+                updatePlayerList({ players });
                 fetch("/set_card", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -168,10 +170,13 @@
                 selectedCard = "?";
                 players = {};
                 stories = [];
-                updateStoryList();
-                updatePlayerList();
+                socket.emit("update_players_request");
+                socket.emit("update_stories_request");
             });
         }
+        
+        socket.on("update_players", updatePlayerList);
+        socket.on("update_stories", updateStoryList);
     </script>
 </body>
 </html>
