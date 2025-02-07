@@ -9,6 +9,7 @@ players = {}
 cards = {}
 revealed = False
 classification = ""
+registered_users = set()  # Para rastrear quién ya ha agregado un jugador
 
 @app.route('/')
 def index():
@@ -16,14 +17,21 @@ def index():
 
 @app.route('/add_player', methods=['POST'])
 def add_player():
-    global players
+    global players, registered_users
     name = request.json.get('name', '').strip()
-    if name and name not in players:
-        players[name] = "?"
-        cards[name] = "🂠"
-        socketio.emit('update_players', {'players': players, 'cards': cards})
-        return jsonify(success=True)
-    return jsonify(success=False, error="Nombre inválido o duplicado")
+    user_id = request.json.get('user_id', '').strip()  # Se espera un identificador único del usuario
+    
+    if not name or name in players:
+        return jsonify(success=False, error="Nombre inválido o duplicado")
+    
+    if user_id in registered_users:
+        return jsonify(success=False, error="Cada usuario solo puede agregar un jugador")
+    
+    players[name] = "?"
+    cards[name] = "🂠"
+    registered_users.add(user_id)
+    socketio.emit('update_players', {'players': players, 'cards': cards})
+    return jsonify(success=True)
 
 @app.route('/set_card', methods=['POST'])
 def set_card():
