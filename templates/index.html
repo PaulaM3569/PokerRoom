@@ -69,10 +69,12 @@
         </div>
         
         <h2>Controles</h2>
-        <label>Clasificación:</label>
+        <label>Historia:</label>
         <input type="text" id="classification">
-        <button onclick="revealCards()">Revelar Cartas</button>
-        <button onclick="resetGame()">Reiniciar Juego</button>
+        <div>
+            <button onclick="revealCards()">Revelar Cartas</button>
+            <button onclick="resetGame()">Reiniciar Juego</button>
+        </div>
     </div>
     
     <script>
@@ -152,7 +154,7 @@
         socket.on("reveal_cards", data => {
             document.getElementById("playerList").innerHTML =
                 Object.keys(data.cards).map(name => `<li>${name}: ${data.cards[name]}</li>`).join("");
-            alert(`Clasificación: ${data.classification}`);
+            alert(`Historia: ${data.classification}`);
         });
         
         socket.on("reset_game", () => {
