@@ -79,6 +79,7 @@
         const socket = io();
         let playerName = "";
         let playerAdded = false;
+        let selectedCard = "?";
         
         function addPlayer() {
             if (playerAdded) {
@@ -101,6 +102,8 @@
         
         function setCard(card) {
             if (playerName) {
+                selectedCard = card;
+                updatePlayerList();
                 fetch("/set_card", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -129,12 +132,18 @@
                 document.getElementById("classification").value = "";
                 document.getElementById("addPlayerButton").disabled = false;
                 playerAdded = false;
+                selectedCard = "?";
             });
+        }
+        
+        function updatePlayerList() {
+            document.getElementById("playerList").innerHTML =
+                `<li>${playerName}: ${selectedCard}</li>`;
         }
         
         socket.on("update_players", data => {
             document.getElementById("playerList").innerHTML =
-                Object.keys(data.players).map(name => `<li>${name}: ${data.players[name]}</li>`).join("");
+                Object.keys(data.players).map(name => `<li>${name}: ${name === playerName ? selectedCard : "🂠"}</li>`).join("");
         });
         
         socket.on("reveal_cards", data => {
@@ -150,6 +159,7 @@
             document.getElementById("classification").value = "";
             document.getElementById("addPlayerButton").disabled = false;
             playerAdded = false;
+            selectedCard = "?";
         });
     </script>
 </body>
