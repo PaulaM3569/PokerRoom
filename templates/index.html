@@ -19,7 +19,7 @@
         label {
             font-size: 18px;
         }
-        input, button {
+        input, button, select {
             margin: 10px;
             padding: 10px;
             font-size: 16px;
@@ -71,6 +71,10 @@
         <h2>Controles</h2>
         <label>Historia:</label>
         <input type="text" id="classification">
+        <button onclick="addHistory()">Agregar Historia</button>
+        <select id="historyDropdown">
+            <option value="">Seleccionar historia</option>
+        </select>
         <div>
             <button onclick="revealCards()">Revelar Cartas</button>
             <button onclick="resetGame()">Reiniciar Juego</button>
@@ -138,7 +142,20 @@
                 playerAdded = false;
                 selectedCard = "?";
                 players = {};
+                document.getElementById("historyDropdown").innerHTML = '<option value="">Seleccionar historia</option>';
             });
+        }
+        
+        function addHistory() {
+            const classification = document.getElementById("classification").value;
+            if (classification.trim() !== "") {
+                const dropdown = document.getElementById("historyDropdown");
+                const option = document.createElement("option");
+                option.text = classification;
+                option.value = classification;
+                dropdown.add(option);
+                document.getElementById("classification").value = "";
+            }
         }
         
         function updatePlayerList() {
@@ -166,6 +183,7 @@
             playerAdded = false;
             selectedCard = "?";
             players = {};
+            document.getElementById("historyDropdown").innerHTML = '<option value="">Seleccionar historia</option>';
         });
     </script>
 </body>
